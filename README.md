@@ -104,8 +104,6 @@ The fastest way to run FounderOS. Works on any machine with Docker installed.
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose
 - A [Fireworks AI](https://fireworks.ai/) API key ([get one free](https://fireworks.ai/))
-- AMD cloud instance (ROCm 7.2 + vLLM + PyTorch pre-installed)
-- Node.js 18+ (for frontend build)
 
 ### 1. Clone the repository
 
