@@ -97,7 +97,52 @@ Technical architect for MVP design, tech stack recommendations, API design, code
 ### 🧠 Coach (Gemma 4 26B) ⭐ Bonus Challenge
 Startup coach and mentor providing decision frameworks, accountability, founder well-being support, and personalized mentorship.
 
-## Setup on AMD Cloud Instance
+## Quick Start (Docker — Recommended)
+
+The fastest way to run FounderOS. Works on any machine with Docker installed.
+
+### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
+- A [Fireworks AI](https://fireworks.ai/) API key ([get one free](https://fireworks.ai/))
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/b3panda3/founderos-hackathon.git
+cd founderos-hackathon
+```
+
+### 2. Create your `.env` file
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and add your Fireworks API key:
+
+```env
+FIREWORKS_BASE_URL=https://api.fireworks.ai/inference/v1
+FIREWORKS_API_KEY=fw_your-key-here
+DEV_MODE=false
+```
+
+> **On the hackathon AMD cloud instance**, `FIREWORKS_BASE_URL` and `ALLOWED_MODELS` are injected automatically. Only set `FIREWORKS_API_KEY` in that case.
+
+### 3. Build and run
+
+```bash
+docker-compose up --build
+```
+
+### 4. Open in your browser
+
+Navigate to **http://localhost:8000**
+
+That's it — the container handles all dependencies, builds the frontend, and starts the server.
+
+---
+
+## Manual Setup on AMD Cloud Instance
 
 ### Prerequisites
 - AMD cloud instance (ROCm 7.2 + vLLM + PyTorch pre-installed)
