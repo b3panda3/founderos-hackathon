@@ -51,8 +51,8 @@ class AgentInfo(BaseModel):
 
 class KnowledgeIngestRequest(BaseModel):
     """Request to add content to knowledge base."""
-    text: Optional[str] = None
-    url: Optional[str] = None
+    text: Optional[str] = Field(default=None, max_length=100_000)
+    url: Optional[str] = Field(default=None, max_length=2_048)
     metadata: Optional[dict[str, Any]] = None
 
 

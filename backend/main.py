@@ -7,12 +7,15 @@ AMD AI Developer Hackathon Track 3 (Unicorn/Open Innovation) Submission.
 import json
 import logging
 import os
+import time
+from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Security, status
+from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import (
     HTMLResponse,
@@ -42,6 +45,40 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger("founderos")
+
+knowledge_api_key = APIKeyHeader(name="X-Knowledge-API-Key", auto_error=False)
+_knowledge_request_times: dict[str, deque[float]] = defaultdict(deque)
+KNOWLEDGE_RATE_LIMIT = 20
+KNOWLEDGE_RATE_WINDOW_SECONDS = 60
+
+
+async def protect_knowledge_write(
+    request: Request,
+    api_key: str | None = Security(knowledge_api_key),
+) -> None:
+    """Require an explicit key and limit write requests to the knowledge store."""
+    if not settings.KNOWLEDGE_API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Knowledge ingestion is disabled until KNOWLEDGE_API_KEY is configured.",
+        )
+    if api_key != settings.KNOWLEDGE_API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid knowledge API key.",
+        )
+
+    client = request.client.host if request.client else "unknown"
+    now = time.monotonic()
+    timestamps = _knowledge_request_times[client]
+    while timestamps and now - timestamps[0] >= KNOWLEDGE_RATE_WINDOW_SECONDS:
+        timestamps.popleft()
+    if len(timestamps) >= KNOWLEDGE_RATE_LIMIT:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Knowledge ingestion rate limit exceeded. Try again shortly.",
+        )
+    timestamps.append(now)
 
 
 @asynccontextmanager
@@ -182,6 +219,12 @@ async def chat(request: ChatRequest):
         return {"agent": request.agent, "content": response_text}
 
 
+@app.get("/api/agents")
+async def list_agents():
+    """List available agent metadata for clients that need dynamic agent selection."""
+    return {"agents": agent_graph.get_agents()}
+
+
 async def _stream_chat(request: ChatRequest):
     """Generator for SSE streaming of agent responses."""
     try:
@@ -203,9 +246,11 @@ async def _stream_chat(request: ChatRequest):
         yield "data: [DONE]\n\n"
 
 
-@app.post("/knowledge")
+@app.post("/knowledge", dependencies=[Depends(protect_knowledge_write)])
 async def ingest_knowledge(request: KnowledgeIngestRequest):
     """Add content to the knowledge base."""
+    if not request.text and not request.url:
+        raise HTTPException(status_code=422, detail="Provide text or a URL to ingest.")
     total_chunks = 0
 
     if request.text:

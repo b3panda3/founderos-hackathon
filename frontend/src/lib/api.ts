@@ -25,7 +25,7 @@ export interface ChatRequest {
 }
 
 export async function fetchAgents(): Promise<AgentInfo[]> {
-  const res = await fetch(`${API_BASE}/agents`)
+  const res = await fetch(`${API_BASE}/api/agents`)
   if (!res.ok) throw new Error('Failed to fetch agents')
   const data = await res.json()
   return data.agents
