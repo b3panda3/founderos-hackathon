@@ -190,6 +190,10 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000
 
 Open `http://localhost:8000` in your browser.
 
+For separate frontend development (`cd frontend && npm run dev`), the dashboard
+calls `http://localhost:8000` by default. Set `NEXT_PUBLIC_API_BASE_URL` only if
+your backend is running at a different address.
+
 ### Step 4 (Optional): Enable Local GPU Inference
 
 ```bash
@@ -240,14 +244,15 @@ data: {"type": "done", "agent": "strategist", "agent_name": "Strategist", "total
 data: [DONE]
 ```
 
-### `GET /agents`
+### `GET /api/agents`
 List all available agents with metadata.
 
 ### `GET /health`
 Health check endpoint.
 
 ### `POST /knowledge`
-Add content to the RAG knowledge base.
+Add content to the RAG knowledge base. Requires the `X-Knowledge-API-Key` header,
+using the value configured in `KNOWLEDGE_API_KEY`.
 
 ### `GET /knowledge/search?q=query&n=5`
 Semantic search in the knowledge base.
