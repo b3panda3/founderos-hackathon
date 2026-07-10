@@ -39,6 +39,13 @@ export default function Dashboard() {
     scrollToBottom()
   }, [messages])
 
+  useEffect(() => {
+    const requestedAgent = new URLSearchParams(window.location.search).get('agent')
+    if (requestedAgent && AGENTS.some(agent => agent.id === requestedAgent)) {
+      setSelectedAgent(requestedAgent)
+    }
+  }, [])
+
   const sendMessage = useCallback(async () => {
     if (!input.trim() || isStreaming) return
 

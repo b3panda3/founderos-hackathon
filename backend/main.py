@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Security, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Security, status
 from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import (
@@ -79,6 +79,15 @@ async def protect_knowledge_write(
             detail="Knowledge ingestion rate limit exceeded. Try again shortly.",
         )
     timestamps.append(now)
+
+
+def validate_agent_id(agent_id: str) -> None:
+    """Return a clear client error instead of silently changing the selected agent."""
+    if not agent_graph.get_agent(agent_id):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Unknown agent '{agent_id}'.",
+        )
 
 
 @asynccontextmanager
@@ -199,6 +208,7 @@ async def chat(request: ChatRequest):
     If stream=true, returns SSE (Server-Sent Events) stream.
     If stream=false, returns JSON with the full response.
     """
+    validate_agent_id(request.agent)
     if request.stream:
         return StreamingResponse(
             _stream_chat(request),
@@ -272,7 +282,10 @@ async def ingest_knowledge(request: KnowledgeIngestRequest):
 
 
 @app.get("/knowledge/search")
-async def search_knowledge(q: str, n: int = 5):
+async def search_knowledge(
+    q: str = Query(..., min_length=1),
+    n: int = Query(default=5, ge=1, le=20),
+):
     """Semantic search in the knowledge base."""
     results = await rag_pipeline.retrieve(q, n_results=n)
     return {
