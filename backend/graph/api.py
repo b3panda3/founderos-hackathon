@@ -4,7 +4,9 @@ from fastapi import APIRouter, Query
 from typing import Optional
 from backend.graph.knowledge_graph import knowledge_graph
 
-router = APIRouter(prefix="/graph", tags=["Knowledge Graph"])
+# The application mounts this router at /graph in backend.main.
+# Keeping the prefix here as well would expose routes at /graph/graph/...
+router = APIRouter(tags=["Knowledge Graph"])
 
 
 @router.get("/entities")
