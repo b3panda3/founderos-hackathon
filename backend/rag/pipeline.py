@@ -3,6 +3,7 @@
 import logging
 import ipaddress
 import socket
+import hashlib
 import uuid
 from typing import Optional
 from urllib.parse import urlparse
@@ -56,7 +57,10 @@ class RAGPipeline:
         return self._http_client
 
     async def ingest_text(
-        self, text: str, metadata: Optional[dict] = None
+        self,
+        text: str,
+        metadata: Optional[dict] = None,
+        id_namespace: Optional[str] = None,
     ) -> int:
         """Ingest raw text into the knowledge base. Returns number of chunks added."""
         if not text or not text.strip():
@@ -68,7 +72,16 @@ class RAGPipeline:
         if not chunks:
             return 0
 
-        ids = [str(uuid.uuid4()) for _ in chunks]
+        if id_namespace:
+            # Stable IDs make repeated startup seed operations idempotent.
+            ids = [
+                hashlib.sha256(
+                    f"{id_namespace}:{chunk['text']}".encode("utf-8")
+                ).hexdigest()
+                for chunk in chunks
+            ]
+        else:
+            ids = [str(uuid.uuid4()) for _ in chunks]
         documents = [c["text"] for c in chunks]
         metadatas = [c["metadata"] for c in chunks]
 
@@ -267,6 +280,7 @@ Marc Andreessen: "You can always feel when product-market fit is happening. The 
         return await self.ingest_text(
             startup_content,
             metadata={"source": "seed", "type": "startup_fundamentals"},
+            id_namespace="startup_fundamentals_v1",
         )
 
     async def close(self):

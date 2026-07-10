@@ -145,6 +145,10 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000
 
 Open `http://localhost:8000` in your browser.
 
+For separate frontend development (`cd frontend && npm run dev`), the dashboard
+calls `http://localhost:8000` by default. Set `NEXT_PUBLIC_API_BASE_URL` only if
+your backend is running at a different address.
+
 ### Step 4 (Optional): Enable Local GPU Inference
 
 ```bash
