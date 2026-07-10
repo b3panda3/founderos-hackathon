@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# Build outputs
+.next/
+frontend/out/
+frontend/node_modules/
+dist/
+build/
+*.egg-info/
+
+# Data
+data/chroma/
+data/knowledge_graph.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.tar
+*.tar.gz
+
+# Logs
+*.log
