@@ -1,12 +1,8 @@
 """RAG Pipeline — ingests, chunks, embeds, and retrieves knowledge."""
 
 import logging
-import ipaddress
-import socket
-import hashlib
 import uuid
 from typing import Optional
-from urllib.parse import urlparse
 
 import httpx
 from bs4 import BeautifulSoup
@@ -16,27 +12,6 @@ from backend.rag.chroma_store import chroma_store
 from backend.rag.chunker import TextChunker
 
 logger = logging.getLogger(__name__)
-
-MAX_URL_CONTENT_BYTES = 5 * 1024 * 1024
-
-
-def _validate_public_http_url(url: str) -> None:
-    """Reject URLs that could target local or private network services."""
-    parsed = urlparse(url)
-    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
-        raise ValueError("Only absolute HTTP(S) URLs are allowed.")
-    if parsed.username or parsed.password:
-        raise ValueError("URLs containing credentials are not allowed.")
-
-    try:
-        addresses = socket.getaddrinfo(parsed.hostname, None, type=socket.SOCK_STREAM)
-    except socket.gaierror as exc:
-        raise ValueError("URL host could not be resolved.") from exc
-
-    for address in addresses:
-        ip = ipaddress.ip_address(address[4][0])
-        if not ip.is_global:
-            raise ValueError("URLs resolving to non-public addresses are not allowed.")
 
 
 class RAGPipeline:
@@ -51,16 +26,13 @@ class RAGPipeline:
         if self._http_client is None:
             self._http_client = httpx.AsyncClient(
                 timeout=15.0,
-                follow_redirects=False,
+                follow_redirects=True,
                 headers={"User-Agent": "FounderOS-Bot/1.0"},
             )
         return self._http_client
 
     async def ingest_text(
-        self,
-        text: str,
-        metadata: Optional[dict] = None,
-        id_namespace: Optional[str] = None,
+        self, text: str, metadata: Optional[dict] = None
     ) -> int:
         """Ingest raw text into the knowledge base. Returns number of chunks added."""
         if not text or not text.strip():
@@ -72,16 +44,7 @@ class RAGPipeline:
         if not chunks:
             return 0
 
-        if id_namespace:
-            # Stable IDs make repeated startup seed operations idempotent.
-            ids = [
-                hashlib.sha256(
-                    f"{id_namespace}:{chunk['text']}".encode("utf-8")
-                ).hexdigest()
-                for chunk in chunks
-            ]
-        else:
-            ids = [str(uuid.uuid4()) for _ in chunks]
+        ids = [str(uuid.uuid4()) for _ in chunks]
         documents = [c["text"] for c in chunks]
         metadatas = [c["metadata"] for c in chunks]
 
@@ -102,35 +65,9 @@ class RAGPipeline:
     async def ingest_url(self, url: str) -> int:
         """Fetch a URL, extract text, and ingest into knowledge base."""
         try:
-            current_url = url
-            for _ in range(4):
-                _validate_public_http_url(current_url)
-                async with self.http_client.stream("GET", current_url) as response:
-                    if response.is_redirect:
-                        location = response.headers.get("location")
-                        if not location:
-                            raise ValueError("Redirect response did not include a location.")
-                        current_url = str(response.url.join(location))
-                        continue
-
-                    response.raise_for_status()
-                    content_length = response.headers.get("content-length")
-                    if content_length and int(content_length) > MAX_URL_CONTENT_BYTES:
-                        raise ValueError("URL content exceeds the 5 MB limit.")
-
-                    chunks = []
-                    total_size = 0
-                    async for chunk in response.aiter_bytes():
-                        total_size += len(chunk)
-                        if total_size > MAX_URL_CONTENT_BYTES:
-                            raise ValueError("URL content exceeds the 5 MB limit.")
-                        chunks.append(chunk)
-                    html_content = b"".join(chunks).decode(
-                        response.encoding or "utf-8", errors="replace"
-                    )
-                    break
-            else:
-                raise ValueError("URL exceeded the maximum of three redirects.")
+            response = await self.http_client.get(url)
+            response.raise_for_status()
+            html_content = response.text
 
             soup = BeautifulSoup(html_content, "html.parser")
 
@@ -147,7 +84,7 @@ class RAGPipeline:
 
             metadata = {
                 "source": "url",
-                "url": current_url,
+                "url": url,
                 "title": soup.title.string if soup.title else url,
             }
 
@@ -280,7 +217,6 @@ Marc Andreessen: "You can always feel when product-market fit is happening. The 
         return await self.ingest_text(
             startup_content,
             metadata={"source": "seed", "type": "startup_fundamentals"},
-            id_namespace="startup_fundamentals_v1",
         )
 
     async def close(self):
