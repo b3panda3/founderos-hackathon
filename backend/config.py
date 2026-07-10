@@ -14,8 +14,6 @@ logger = logging.getLogger(__name__)
 class Settings(BaseSettings):
     # API Keys
     FIREWORKS_API_KEY: str = ""
-    # Required to use the write-capable knowledge ingestion endpoint.
-    KNOWLEDGE_API_KEY: str = ""
 
     # API Base URL — overridden by hackathon platform injection
     # Falls back to standard Fireworks URL for local dev
