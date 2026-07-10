@@ -192,12 +192,12 @@ export default function Dashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <div className="flex items-center gap-2">
+          <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
             <div className="w-7 h-7 rounded-lg bg-accent flex items-center justify-center font-bold text-xs">
               F
             </div>
             <span className="font-semibold text-sm">FounderOS</span>
-          </div>
+          </a>
         </div>
         <div className="flex items-center gap-2 text-xs text-dark-400">
           <span className={`w-2 h-2 rounded-full ${isStreaming ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`} />
