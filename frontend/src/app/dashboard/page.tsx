@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
+import { API_BASE } from '../../lib/api'
 
 // Agent definitions (mirrors backend)
 const AGENTS = [
@@ -38,6 +39,13 @@ export default function Dashboard() {
     scrollToBottom()
   }, [messages])
 
+  useEffect(() => {
+    const requestedAgent = new URLSearchParams(window.location.search).get('agent')
+    if (requestedAgent && AGENTS.some(agent => agent.id === requestedAgent)) {
+      setSelectedAgent(requestedAgent)
+    }
+  }, [])
+
   const sendMessage = useCallback(async () => {
     if (!input.trim() || isStreaming) return
 
@@ -67,8 +75,7 @@ export default function Dashboard() {
     abortRef.current = new AbortController()
 
     try {
-      // Determine API URL
-      const apiUrl = '/chat'  // Same origin in production, proxied in dev
+      const apiUrl = `${API_BASE}/chat`
 
       const response = await fetch(apiUrl, {
         method: 'POST',
