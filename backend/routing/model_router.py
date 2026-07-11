@@ -48,8 +48,10 @@ def _validate_model(model_id: str) -> str:
             logger.info(f"Model {model_id} matched to allowed model {allowed}")
             return allowed
     # Fallback to first allowed model
-    logger.warning(f"Model {model_id} not in ALLOWED_MODELS, falling back to {_allowed_models_list[0]}")
-    return _allowed_models_list[0]
+    if _allowed_models_list:
+        logger.warning(f"Model {model_id} not in ALLOWED_MODELS, falling back to {_allowed_models_list[0]}")
+        return _allowed_models_list[0]
+    return model_id
 
 
 # Mock responses for DEV_MODE (zero API cost during development)
@@ -334,17 +336,26 @@ class ModelRouter:
                             break
                         try:
                             data = json.loads(data_str)
-                            delta = data.get("choices", [{}])[0].get("delta", {})
+                            # FIX: Guard against empty choices array
+                            choices = data.get("choices", [])
+                            if not choices:
+                                continue
+                            delta = choices[0].get("delta", {})
                             content = delta.get("content", "")
                             if content:
                                 yield content
-                        except json.JSONDecodeError:
+                        except (json.JSONDecodeError, IndexError, KeyError):
                             continue
         else:
             response = await client.post("/chat/completions", json=payload)
             response.raise_for_status()
             data = response.json()
-            content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            # FIX: Guard against empty choices array
+            choices = data.get("choices", [])
+            if choices:
+                content = choices[0].get("message", {}).get("content", "")
+            else:
+                content = ""
             yield content
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
