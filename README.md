@@ -7,7 +7,7 @@ FounderOS is an AI-powered operating system that gives startup founders access t
 All models run on **AMD Instinct GPUs** via Fireworks AI, with optional **local vLLM inference** on AMD GPUs for maximum performance.
 
 ![Architecture](https://img.shields.io/badge/Architecture-Multi--Agent-blue)
-![Models](https://img.shields.io/badge/Models-GLM_5.2%20%7C%20Kimi K2.6%20%7C%20Deepseek V4 Pro-green)
+![Models](https://img.shields.io/badge/Models-GLM_5.2_%7C_Kimi_K2.6_%7C_Deepseek_V4_Pro-green)
 ![AMD](https://img.shields.io/badge/GPU-AMD_Instinct_%7C_ROCm_7.2-red)
 ![Hackathon](https://img.shields.io/badge/Hackathon-AMD_AI_Track_3-orange)
 
@@ -69,11 +69,11 @@ See the notebook for step-by-step AMD GPU verification, vLLM deployment, and per
 | Vector Database | ChromaDB | Semantic search for RAG pipeline |
 | Knowledge Graph | NetworkX | Startup ecosystem relationship mapping |
 | Primary LLM | GLM 5.2 (Fireworks AI / AMD GPU) | Strategist agent |
-| Research LLM | Llama 3.1 70B (Fireworks AI / AMD GPU) | Researcher agent |
-| Creative LLM | Mistral Large (Fireworks AI / AMD GPU) | Writer agent |
-| Analysis LLM | Qwen 2.5 72B (Fireworks AI / AMD GPU) | Analyst agent |
+| Research LLM | Kimi K2.6 (Fireworks AI / AMD GPU) | Researcher agent |
+| Creative LLM | GPT-OSS 120B (Fireworks AI / AMD GPU) | Writer agent |
+| Analysis LLM | GLM 5.1 (Fireworks AI / AMD GPU) | Analyst agent |
 | Code LLM | DeepSeek V4 Pro (Fireworks AI / AMD GPU) | Coder agent |
-| Bonus LLM | Gemma 4 26B (Fireworks AI / AMD GPU) | Coach agent (Bonus Challenge) |
+| Coaching LLM | Kimi K2.6 (Fireworks AI / AMD GPU) | Coach agent |
 | Local GPU | vLLM 0.16.0 + ROCm 7.2 + PyTorch 2.9 | Optional direct AMD GPU inference |
 | Deployment | Docker (linux/amd64) | Containerized single-service deployment |
 
@@ -82,19 +82,19 @@ See the notebook for step-by-step AMD GPU verification, vLLM deployment, and per
 ### 🎯 Strategist (GLM 5.2)
 Senior startup strategist providing business strategy, market analysis, competitive landscape, and prioritized action plans.
 
-### 🔍 Researcher (Llama 3.1 70B)
+### 🔍 Researcher (Kimi K2.6)
 Market research specialist that searches the knowledge base for relevant data, trends, competitor analysis, and opportunities.
 
-### ✍️ Writer (Mistral Large)
+### ✍️ Writer (GPT-OSS 120B)
 Content creator for pitch narratives, investor emails, landing page copy, blog posts, and social media content.
 
-### 📊 Analyst (Qwen 2.5 72B)
+### 📊 Analyst (GLM 5.1)
 Financial analyst providing unit economics, revenue projections, burn rate analysis, runway calculations, and fundraising strategy.
 
 ### 💻 Coder (DeepSeek V4 Pro)
 Technical architect for MVP design, tech stack recommendations, API design, code generation, and deployment guidance.
 
-### 🧠 Coach (Gemma 4 26B) ⭐ Bonus Challenge
+### 🧠 Coach (Kimi K2.6)
 Startup coach and mentor providing decision frameworks, accountability, founder well-being support, and personalized mentorship.
 
 ## Quick Start (Docker — Recommended)
@@ -153,7 +153,7 @@ That's it — the container handles all dependencies, builds the frontend, and s
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/founderos-hackathon.git
+git clone https://github.com/b3panda3/founderos-hackathon.git
 cd founderos-hackathon
 
 # Create virtual environment and install Python dependencies
@@ -244,7 +244,7 @@ data: {"type": "done", "agent": "strategist", "agent_name": "Strategist", "total
 data: [DONE]
 ```
 
-### `GET /api/agents`
+### `GET /agents`
 List all available agents with metadata.
 
 ### `GET /health`
@@ -280,7 +280,7 @@ founderos-hackathon/
 │   │   ├── writer.py           # Writer agent
 │   │   ├── analyst.py          # Analyst agent
 │   │   ├── coder.py            # Coder agent
-│   │   └── coach.py            # Coach agent (Gemma 4)
+│   │   └── coach.py            # Coach agent
 │   ├── routing/
 │   │   └── model_router.py     # Routes to Fireworks (AMD) or local vLLM
 │   ├── rag/
@@ -311,9 +311,6 @@ founderos-hackathon/
 ### AMD Compute Usage ✅
 1. **Fireworks AI**: All 6 agents use models hosted on AMD Instinct GPUs via Fireworks, with `FIREWORKS_BASE_URL` routing for tracking
 2. **Local GPU**: The `amd_gpu_demo.ipynb` notebook demonstrates direct AMD GPU inference using vLLM + ROCm 7.2 + PyTorch 2.9
-
-### Bonus Challenge: Best Use of Gemma 4 ✅
-The **Coach agent** is powered by **Gemma 4 26B** via Fireworks AI on AMD GPUs.
 
 ### Submission Requirements
 - [x] Public GitHub repository
