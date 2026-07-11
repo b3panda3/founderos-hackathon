@@ -7,7 +7,7 @@ FounderOS is an AI-powered operating system that gives startup founders access t
 All models run on **AMD Instinct GPUs** via Fireworks AI, with optional **local vLLM inference** on AMD GPUs for maximum performance.
 
 ![Architecture](https://img.shields.io/badge/Architecture-Multi--Agent-blue)
-![Models](https://img.shields.io/badge/Models-GLM_5.2%20%7C%20Llama_3.1%20%7C%20Gemma_4-green)
+![Models](https://img.shields.io/badge/Models-GLM_5.2%20%7C%20Kimi K2.6%20%7C%20Deepseek V4 Pro-green)
 ![AMD](https://img.shields.io/badge/GPU-AMD_Instinct_%7C_ROCm_7.2-red)
 ![Hackathon](https://img.shields.io/badge/Hackathon-AMD_AI_Track_3-orange)
 
