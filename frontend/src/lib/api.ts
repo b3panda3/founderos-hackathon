@@ -4,7 +4,10 @@
  * In development, Next.js rewrites proxy to localhost:8000.
  */
 
-const API_BASE = ''  // Same origin
+// Static exports cannot use Next.js rewrites. Development calls FastAPI directly;
+// production stays same-origin when FastAPI serves the exported frontend.
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ??
+  (process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : '')
 
 export interface AgentInfo {
   id: string
@@ -25,7 +28,7 @@ export interface ChatRequest {
 }
 
 export async function fetchAgents(): Promise<AgentInfo[]> {
-  const res = await fetch(`${API_BASE}/agents`)
+  const res = await fetch(`${API_BASE}/api/agents`)
   if (!res.ok) throw new Error('Failed to fetch agents')
   const data = await res.json()
   return data.agents
