@@ -310,7 +310,7 @@ founderos-hackathon/
 
 ### AMD Compute Usage ✅
 1. **Fireworks AI**: All 6 agents use models hosted on AMD Instinct GPUs via Fireworks, with `FIREWORKS_BASE_URL` routing for tracking
-2. **Local GPU**: The `amd_gpu_demo.ipynb` notebook demonstrates direct AMD GPU inference using vLLM + ROCm 7.2 + PyTorch 2.9
+2. **Local GPU**: The `amd_gpu_demo.ipynb` notebook demonstrates direct AMD GPU inference using vLLM + ROCm 7.2 + PyTorch 2.9.
 
 ### Submission Requirements
 - [x] Public GitHub repository
